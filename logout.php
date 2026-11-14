@@ -27,16 +27,27 @@
     $redirectSeconds = 4;
 ?>
 <!DOCTYPE html>
-<html lang="th" data-bs-theme="dark">
+<html lang="th" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f6f7fb">
     <meta http-equiv="refresh" content="<?php echo (int) $redirectSeconds ?>;url=<?php echo htmlspecialchars($loginUrl) ?>">
     <title>ออกจากระบบแล้ว - <?php echo htmlspecialchars(APP_NAME) ?></title>
+    <script>
+    (function () {
+        try {
+            var saved = localStorage.getItem('hr-theme');
+            var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#080b16' : '#f6f7fb');
+        } catch (e) {}
+    })();
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="<?php echo BASE_URL ?>/assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL ?>/assets/css/style.css?v=<?php echo @filemtime(ROOT_PATH . '/assets/css/style.css') ?: 1 ?>" rel="stylesheet">
     <link href="<?php echo BASE_URL ?>/assets/css/logout.css?v=<?php echo @filemtime(ROOT_PATH . '/assets/css/logout.css') ?: 1 ?>" rel="stylesheet">
 </head>
 <body>

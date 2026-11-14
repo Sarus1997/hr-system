@@ -7,8 +7,8 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #0a0e1f;
-  color: #fff;
+  background: var(--bg-body);
+  color: var(--ink);
   overflow: hidden;
 }
 
@@ -17,6 +17,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 0;
+  background: var(--bg-body);
   pointer-events: none;
 }
 
@@ -149,7 +150,7 @@ body {
 
 .brand-sub {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--ink-3);
 }
 
 /* ---------- การ์ดกระจก ---------- */
@@ -159,11 +160,9 @@ body {
   padding: 2.75rem 2.25rem 2.25rem;
   text-align: center;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 40px 80px -30px rgba(0, 0, 0, 0.7);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
@@ -258,12 +257,12 @@ body {
   font-weight: 800;
   line-height: 1.35;
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--ink);
 }
 
 .bye-sub {
   margin: 0 0 1.75rem;
-  color: #aab4cf;
+  color: var(--ink-3);
   font-size: 0.93rem;
   line-height: 1.75;
 }
@@ -364,7 +363,17 @@ body {
 
 .bye-foot {
   font-size: 0.76rem;
-  color: #6f7a99;
+  color: var(--ink-3);
+}
+
+[data-bs-theme="light"] .scene .aurora i:nth-child(1) { opacity: 0.16; }
+[data-bs-theme="light"] .scene .aurora i:nth-child(2) { opacity: 0.1; }
+[data-bs-theme="light"] .scene .aurora i:nth-child(3) { opacity: 0.06; }
+
+[data-bs-theme="light"] .scene .grid-bg {
+  background-image:
+    linear-gradient(rgba(67, 56, 202, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(67, 56, 202, 0.035) 1px, transparent 1px);
 }
 
 @media (max-width: 480px) {

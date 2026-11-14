@@ -110,7 +110,7 @@
 
             <!-- ปุ่มสลับธีมสว่าง / มืด -->
             <button class="btn btn-light notification-trigger theme-toggle" id="themeToggle" type="button"
-                    aria-label="ธีมมืด" aria-pressed="false" title="สลับธีมสว่าง / มืด">
+                    aria-label="สลับธีมสว่าง / มืด" aria-pressed="false" title="สลับธีมสว่าง / มืด">
                 <i class="bi bi-moon-stars-fill icon-moon" aria-hidden="true"></i>
                 <i class="bi bi-sun-fill icon-sun" aria-hidden="true"></i>
             </button>

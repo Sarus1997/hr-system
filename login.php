@@ -2,34 +2,106 @@
     require_once __DIR__ . '/config/app.php';
     require_once ROOT_PATH . '/config/db.php';
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $stmt = $pdo->prepare(
-        "SELECT u.*, e.first_name, e.last_name
-         FROM users u
-         JOIN employees e ON u.employee_id = e.id
-         WHERE u.username = ? AND u.status = 1 AND e.status = 1
-           AND e.employment_status IN ('active', 'probation')"
-    );
-    $stmt->execute([$_POST['username']]);
-    $user = $stmt->fetch();
+    $loginFailureThreshold   = 3;
+    $loginFailureWindow      = 900;
+    $failedLoginAttempts     = $_SESSION['login_failed_attempts'] ?? 0;
+    $failureWindowStartedAt  = $_SESSION['login_failure_started_at'] ?? null;
+    $now                     = time();
 
-    if ($user && password_verify($_POST['password'], $user['password_hash'])) {
-        $passwordHash  = $user['password_hash'];
-        $bcryptOptions = ['cost' => 12];
-        if (password_needs_rehash($passwordHash, PASSWORD_BCRYPT, $bcryptOptions)) {
-            $passwordHash = password_hash($_POST['password'], PASSWORD_BCRYPT, $bcryptOptions);
+    if (! is_int($failedLoginAttempts) || $failedLoginAttempts < 0 ||
+        ! is_int($failureWindowStartedAt) || $failureWindowStartedAt > $now ||
+        $failureWindowStartedAt < $now - $loginFailureWindow) {
+        unset($_SESSION['login_failed_attempts'], $_SESSION['login_failure_started_at'], $_SESSION['login_captcha']);
+        $failedLoginAttempts = 0;
+        $failureWindowStartedAt = null;
+    }
+
+    $captchaRequired = $failedLoginAttempts >= $loginFailureThreshold;
+    $captcha         = $_SESSION['login_captcha'] ?? null;
+    $refreshCaptcha  = static function (): array {
+        $left  = random_int(2, 9);
+        $right = random_int(1, 9);
+        $challenge = [
+            'question' => $left . ' + ' . $right,
+            'answer'   => (string) ($left + $right),
+        ];
+        $_SESSION['login_captcha'] = $challenge;
+
+        return $challenge;
+    };
+
+    if ($captchaRequired &&
+        (! is_array($captcha) || ! isset($captcha['question'], $captcha['answer']) ||
+            ! is_string($captcha['question']) || ! is_string($captcha['answer']))) {
+        $captcha = $refreshCaptcha();
+    }
+
+    $usernameValue = isset($_POST['username']) && is_string($_POST['username']) ? $_POST['username'] : '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $captchaValid = true;
+        if ($captchaRequired) {
+            $providedAnswer = $_POST['captcha_answer'] ?? null;
+            $expectedAnswer = is_array($captcha) ? ($captcha['answer'] ?? null) : null;
+            if (! is_string($providedAnswer) || ! preg_match('/^\d{1,2}$/D', $providedAnswer) ||
+                ! is_string($expectedAnswer) || ! hash_equals($expectedAnswer, $providedAnswer)) {
+                $captchaValid = false;
+                $error        = 'คำตอบตรวจสอบความปลอดภัยไม่ถูกต้อง กรุณาลองอีกครั้ง';
+                $captcha      = $refreshCaptcha();
+            } else {
+                unset($_SESSION['login_captcha']);
+                $captcha = null;
+            }
         }
 
-        $_SESSION['user_id']     = $user['id'];
-        $_SESSION['employee_id'] = $user['employee_id'];
-        $_SESSION['role']        = $user['role'];
-        $_SESSION['full_name']   = $user['first_name'] . ' ' . $user['last_name'];
-        $pdo->prepare('UPDATE users SET last_login = NOW(), password = ?, password_hash = ? WHERE id = ?')
-            ->execute([$passwordHash, $passwordHash, $user['id']]);
-        header("Location: " . BASE_URL . "/login.php?welcome=1");
-        exit;
-    }
-    $error = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        if ($captchaValid) {
+            $username = $_POST['username'] ?? null;
+            $password = $_POST['password'] ?? null;
+            $user     = null;
+
+            if (is_string($username) && is_string($password)) {
+                $stmt = $pdo->prepare(
+                    "SELECT u.*, e.first_name, e.last_name
+                     FROM users u
+                     JOIN employees e ON u.employee_id = e.id
+                     WHERE u.username = ? AND u.status = 1 AND e.status = 1
+                       AND e.employment_status IN ('active', 'probation')"
+                );
+                $stmt->execute([$username]);
+                $user = $stmt->fetch();
+            }
+
+            if ($user && is_string($password) && password_verify($password, $user['password_hash'])) {
+                $passwordHash  = $user['password_hash'];
+                $bcryptOptions = ['cost' => 12];
+                if (password_needs_rehash($passwordHash, PASSWORD_BCRYPT, $bcryptOptions)) {
+                    $passwordHash = password_hash($password, PASSWORD_BCRYPT, $bcryptOptions);
+                }
+
+                $pdo->prepare('UPDATE users SET last_login = NOW(), password = ?, password_hash = ? WHERE id = ?')
+                    ->execute([$passwordHash, $passwordHash, $user['id']]);
+                session_regenerate_id(true);
+                unset($_SESSION['login_failed_attempts'], $_SESSION['login_failure_started_at'], $_SESSION['login_captcha']);
+                $_SESSION['user_id']     = $user['id'];
+                $_SESSION['employee_id'] = $user['employee_id'];
+                $_SESSION['role']        = $user['role'];
+                $_SESSION['full_name']   = $user['first_name'] . ' ' . $user['last_name'];
+                header("Location: " . BASE_URL . "/login.php?welcome=1");
+                exit;
+            }
+
+            if ($failedLoginAttempts === 0) {
+                $_SESSION['login_failure_started_at'] = $now;
+            }
+            $failedLoginAttempts = min($failedLoginAttempts + 1, 1000000);
+            $_SESSION['login_failed_attempts'] = $failedLoginAttempts;
+            $error = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+            $captchaRequired = $failedLoginAttempts >= $loginFailureThreshold;
+
+            if ($captchaRequired) {
+                $captcha = $refreshCaptcha();
+            }
+        }
     }
 
     // หน้าต้อนรับหลังล็อกอินสำเร็จ (แสดงเฉพาะคนที่ล็อกอินแล้วเท่านั้น)
@@ -64,7 +136,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="<?php echo BASE_URL ?>/assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL ?>/assets/css/style.css?v=<?php echo @filemtime(ROOT_PATH . '/assets/css/style.css') ?: 1 ?>" rel="stylesheet">
     <link href="<?php echo BASE_URL ?>/assets/css/login.css?v=<?php echo @filemtime(ROOT_PATH . '/assets/css/login.css') ?: 1 ?>" rel="stylesheet">
 </head>
 <body>
@@ -163,7 +235,7 @@
     <!-- ===== แผงฟอร์ม ===== -->
     <main class="auth-main">
         <button class="btn btn-light notification-trigger theme-toggle auth-theme" id="themeToggle" type="button"
-                aria-label="ธีมมืด" aria-pressed="false" title="สลับธีมสว่าง / มืด">
+                aria-label="สลับธีมสว่าง / มืด" aria-pressed="false" title="สลับธีมสว่าง / มืด">
             <i class="bi bi-moon-stars-fill icon-moon" aria-hidden="true"></i>
             <i class="bi bi-sun-fill icon-sun" aria-hidden="true"></i>
         </button>
@@ -194,7 +266,7 @@
                         <i class="bi bi-person bi-lead" aria-hidden="true"></i>
                         <input type="text" name="username" id="userInp" class="field-input"
                                placeholder="เช่น admin" autocomplete="username" autocapitalize="none" spellcheck="false"
-                               value="<?php echo htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus>
+                               value="<?php echo htmlspecialchars($usernameValue, ENT_QUOTES, 'UTF-8') ?>" required autofocus>
                     </div>
                 </div>
 
@@ -213,7 +285,20 @@
                     </div>
                 </div>
 
-                <div class="rise" style="--i:5">
+                <?php if ($captchaRequired): ?>
+                    <div class="field rise" style="--i:5">
+                        <label class="field-label" for="captchaInp">
+                            ยืนยันความปลอดภัย: <?php echo htmlspecialchars($captcha['question'], ENT_QUOTES, 'UTF-8') ?> = ?
+                        </label>
+                        <div class="field-box">
+                            <i class="bi bi-shield-check bi-lead" aria-hidden="true"></i>
+                            <input type="number" name="captcha_answer" id="captchaInp" class="field-input"
+                                   inputmode="numeric" min="0" max="18" step="1" autocomplete="off" required>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <div class="rise" style="--i:<?php echo $captchaRequired ? 6 : 5 ?>">
                     <button type="submit" class="btn-signin" id="signinBtn">
                         <span class="label">เข้าสู่ระบบ <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
                         <span class="spinner" aria-hidden="true"></span>
@@ -275,7 +360,11 @@ function fillLogin(u) {
 
     /* ถ้ามีข้อผิดพลาด ให้โฟกัสช่องรหัสผ่านทันที */
     <?php if (! empty($error)): ?>
+    <?php if ($captchaRequired): ?>
+    document.getElementById('captchaInp').focus();
+    <?php else: ?>
     pw.focus();
+    <?php endif; ?>
     <?php endif; ?>
 
     /* แสงตามเมาส์บนแผงแบรนด์ */

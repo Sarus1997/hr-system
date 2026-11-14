@@ -65,7 +65,7 @@
     include ROOT_PATH . '/includes/layout_top.php';
 ?>
 
-<div class="glass-card p-4 mb-4 animate-up" style="background: linear-gradient(135deg, #eef2ff, #ffffff); border-left: 5px solid var(--primary);">
+<div class="glass-card leave-reset-callout p-4 mb-4 animate-up">
     <div class="row align-items-center g-3">
         <div class="col-md-8">
             <h5 class="fw-bold mb-1">ประมวลผลปิดยอดวันลาปี <?php echo $currentYear ?> ➔ ขึ้นปีใหม่ <?php echo $nextYear ?></h5>
@@ -102,7 +102,7 @@
         </div>
         <div class="d-flex flex-column flex-sm-row gap-2">
             <label class="input-group" style="max-width: 360px;">
-                <span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
                 <input type="search" id="employeeSearch" class="form-control" placeholder="ค้นหาชื่อหรือรหัสพนักงาน" aria-label="ค้นหาชื่อหรือรหัสพนักงาน">
             </label>
             <form method="GET" class="d-flex gap-2">

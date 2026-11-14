@@ -16,20 +16,34 @@
 
 ?>
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-bs-theme="light">
 <head>
-    <meta charset="UTF-8"><title>สลิปเงินเดือน - <?php echo htmlspecialchars($slip['emp_code']) ?></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f6f7fb">
+    <title>สลิปเงินเดือน - <?php echo htmlspecialchars($slip['emp_code']) ?></title>
+    <script>
+    (function () {
+        try {
+            var saved = localStorage.getItem('hr-theme');
+            var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#080b16' : '#f6f7fb');
+        } catch (e) {}
+    })();
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?php echo BASE_URL ?>/assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL ?>/assets/css/style.css?v=<?php echo filemtime(ROOT_PATH . '/assets/css/style.css') ?>" rel="stylesheet">
 </head>
-<body class="p-4">
-<div class="glass-card mx-auto p-5 animate-up" style="max-width: 720px;">
+<body class="p-3 p-md-4">
+<div class="glass-card mx-auto p-4 p-md-5 animate-up" style="max-width: 720px;">
     <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
         <div>
             <h4 class="fw-bold text-primary mb-0">NEXUS HR CLOUD</h4>
             <small class="text-muted">ใบแจ้งเงินเดือนอิเล็กทรอนิกส์ (E-Pay Slip)</small>
         </div>
-        <button onclick="window.print()" class="btn btn-dark btn-sm d-print-none">พิมพ์ / PDF</button>
+        <button onclick="window.print()" class="btn btn-primary btn-sm d-print-none">พิมพ์ / PDF</button>
     </div>
     <div class="row mb-4 small">
         <div class="col-6"><strong>พนักงาน:</strong> <?php echo htmlspecialchars($slip['emp_code'].' '.$slip['first_name'].' '.$slip['last_name']) ?><br><strong>แผนก:</strong> <?php echo htmlspecialchars($slip['dept']??'-') ?></div>
