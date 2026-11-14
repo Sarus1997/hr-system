@@ -1,13 +1,29 @@
 <?php
-require_once ROOT_PATH . '/includes/approval_workflow.php';
-$approvalNotifications = getPendingApprovalNotifications($pdo, (string)($_SESSION['employee_id'] ?? ''));
+    require_once ROOT_PATH . '/includes/approval_workflow.php';
+    $approvalNotifications = getPendingApprovalNotifications($pdo, (string) ($_SESSION['employee_id'] ?? ''));
 ?>
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f6f7fb">
     <title><?php echo htmlspecialchars($pageTitle ?? APP_NAME) ?></title>
+
+    <!-- ตั้งธีมก่อนวาดหน้า เพื่อไม่ให้จอกะพริบขาวตอนโหลด -->
+    <script>
+    (function () {
+        try {
+            var saved = localStorage.getItem('hr-theme');
+            var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', theme === 'dark' ? '#080b16' : '#f6f7fb');
+        } catch (e) {}
+    })();
+    </script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?php echo BASE_URL ?>/assets/css/style.css?v=<?php echo filemtime(ROOT_PATH . '/assets/css/style.css') ?>" rel="stylesheet">
@@ -85,36 +101,44 @@ $approvalNotifications = getPendingApprovalNotifications($pdo, (string)($_SESSIO
             <button class="btn btn-light d-lg-none" id="sidebarToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="เปิดเมนู">
                 <i class="bi bi-list fs-5" aria-hidden="true"></i>
             </button>
-            <h5 class="mb-0 fw-bold text-dark"><?php echo htmlspecialchars($pageTitle ?? 'Dashboard') ?></h5>
+            <h5 class="mb-0 fw-bold text-body-emphasis"><?php echo htmlspecialchars($pageTitle ?? 'Dashboard') ?></h5>
         </div>
         <div class="d-flex align-items-center gap-3">
             <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 d-none d-sm-inline-flex align-items-center gap-2">
                 <span class="pulse-dot"></span> Cloud Sync Online
             </span>
+
+            <!-- ปุ่มสลับธีมสว่าง / มืด -->
+            <button class="btn btn-light notification-trigger theme-toggle" id="themeToggle" type="button"
+                    aria-label="ธีมมืด" aria-pressed="false" title="สลับธีมสว่าง / มืด">
+                <i class="bi bi-moon-stars-fill icon-moon" aria-hidden="true"></i>
+                <i class="bi bi-sun-fill icon-sun" aria-hidden="true"></i>
+            </button>
+
             <div class="dropdown">
                 <button
-                    class="btn btn-light notification-trigger position-relative"
+                    class="btn btn-light notification-trigger position-relative<?php echo $approvalNotifications['total'] > 0 ? ' has-pending' : '' ?>"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                     aria-label="<?php echo $approvalNotifications['total'] > 0
-                        ? 'การแจ้งเตือน มี ' . (int)$approvalNotifications['total'] . ' รายการรออนุมัติ'
-                        : 'การแจ้งเตือน ไม่มีรายการรออนุมัติ' ?>"
+                                    ? 'การแจ้งเตือน มี ' . (int) $approvalNotifications['total'] . ' รายการรออนุมัติ'
+                                    : 'การแจ้งเตือน ไม่มีรายการรออนุมัติ' ?>"
                 >
                     <i class="bi bi-bell" aria-hidden="true"></i>
                     <?php if ($approvalNotifications['total'] > 0): ?>
                         <span class="badge rounded-pill bg-danger notification-count">
-                            <?php echo $approvalNotifications['total'] > 99 ? '99+' : (int)$approvalNotifications['total'] ?>
+                            <?php echo $approvalNotifications['total'] > 99 ? '99+' : (int) $approvalNotifications['total'] ?>
                         </span>
                     <?php endif; ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end notification-menu shadow border-0 rounded-3">
                     <li class="notification-heading">
                         <div class="fw-semibold">รายการรออนุมัติ</div>
-                        <small class="text-muted"><?php echo (int)$approvalNotifications['total'] ?> รายการ</small>
+                        <small class="text-muted"><?php echo (int) $approvalNotifications['total'] ?> รายการ</small>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
-                    <?php if (!$approvalNotifications['items']): ?>
+                    <?php if (! $approvalNotifications['items']): ?>
                         <li><div class="notification-empty text-muted small">ไม่มีคำขอลาหรือ OT ที่รออนุมัติ</div></li>
                     <?php else: ?>
                         <?php foreach ($approvalNotifications['items'] as $notification): ?>
@@ -134,18 +158,18 @@ $approvalNotifications = getPendingApprovalNotifications($pdo, (string)($_SESSIO
                         <?php endforeach; ?>
                     <?php endif; ?>
                     <?php if ($approvalNotifications['total'] > count($approvalNotifications['items'])): ?>
-                        <li class="px-3 py-2 small text-muted">ยังมีอีก <?php echo (int)($approvalNotifications['total'] - count($approvalNotifications['items'])) ?> รายการ</li>
+                        <li class="px-3 py-2 small text-muted">ยังมีอีก <?php echo (int) ($approvalNotifications['total'] - count($approvalNotifications['items'])) ?> รายการ</li>
                     <?php endif; ?>
                     <li><hr class="dropdown-divider my-1"></li>
                     <li><a class="dropdown-item text-center small fw-semibold" href="<?php echo BASE_URL ?>/modules/ess/ess_portal.php#approvalQueue">ดูรายการอนุมัติทั้งหมด</a></li>
                 </ul>
             </div>
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center gap-2 text-decoration-none text-dark dropdown-toggle" data-bs-toggle="dropdown">
+                <a href="#" class="d-flex align-items-center gap-2 text-decoration-none text-body-emphasis dropdown-toggle" data-bs-toggle="dropdown">
                     <?php
-                    $profileImageStmt = $pdo->prepare('SELECT profile_image_url FROM employees WHERE id = ?');
-                    $profileImageStmt->execute([(string)($_SESSION['employee_id'] ?? '')]);
-                    $profileImageUrl = getSafeProfileImageUrl($profileImageStmt->fetchColumn());
+                        $profileImageStmt = $pdo->prepare('SELECT profile_image_url FROM employees WHERE id = ?');
+                        $profileImageStmt->execute([(string) ($_SESSION['employee_id'] ?? '')]);
+                        $profileImageUrl = getSafeProfileImageUrl($profileImageStmt->fetchColumn());
                     ?>
                     <div class="avatar-circle">
                         <?php if ($profileImageUrl !== null): ?>
