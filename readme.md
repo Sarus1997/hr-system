@@ -68,3 +68,8 @@ the audit log table. Private employee-document and OT-upload directories are
 served through authenticated PHP endpoints; the Apache deny rules in each
 directory should be retained. Configure equivalent direct-access denial in
 the web server if it does not honor `.htaccess`.
+
+To allow employee records in different company contexts to share an email
+address or ID card number, back up the database, check for duplicate employee
+codes, and run `database/employee_identity_uniqueness_migration.sql`.
+Employee codes must remain unique across all companies.

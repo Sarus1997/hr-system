@@ -5,6 +5,29 @@
     die("Access Denied");
     }
 
+    $companies = $pdo->query('SELECT company_id, company_code, company_name, status FROM companies ORDER BY company_name, company_id')->fetchAll();
+    $companyOptions = ['all' => 'ทุกบริษัท'];
+    foreach ($companies as $company) {
+        $companyId = (string) (int) $company['company_id'];
+        $companyOptions[$companyId] = $company['company_code'] . ' · ' . $company['company_name']
+            . ((int) $company['status'] === 1 ? '' : ' (ปิดใช้งาน)');
+    }
+
+    $selectedCompany = 'all';
+    if (array_key_exists('company', $_GET)) {
+        $requestedCompany = $_GET['company'];
+        if (! is_string($requestedCompany) || ! array_key_exists($requestedCompany, $companyOptions)) {
+            http_response_code(400);
+            exit('บริษัทที่เลือกไม่ถูกต้อง');
+        }
+        $selectedCompany = $requestedCompany;
+    }
+    $selectedCompanyId = $selectedCompany === 'all' ? null : (int) $selectedCompany;
+    $exportQuery = ['action' => 'export'];
+    if ($selectedCompanyId !== null) {
+        $exportQuery['company'] = $selectedCompany;
+    }
+
     if (isset($_GET['action']) && $_GET['action'] === 'export') {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="employees_export.csv"');
@@ -15,7 +38,13 @@
             FROM employees e JOIN companies c ON c.company_id=e.company_id
             LEFT JOIN departments d ON e.department_id=d.id LEFT JOIN positions p ON e.position_id=p.id
             LEFT JOIN users u ON u.employee_id=e.id";
-    foreach ($pdo->query($sql, PDO::FETCH_NUM) as $r) {
+    if ($selectedCompanyId !== null) {
+        $sql .= ' WHERE e.company_id = ?';
+    }
+    $sql .= ' ORDER BY e.emp_code';
+    $exportStmt = $pdo->prepare($sql);
+    $exportStmt->execute($selectedCompanyId === null ? [] : [$selectedCompanyId]);
+    foreach ($exportStmt->fetchAll(PDO::FETCH_NUM) as $r) {
         fputcsv($out, $r);
     }
 
@@ -93,23 +122,43 @@
         $msg = 'บันทึกข้อมูลพนักงานสำเร็จ';
     }
 
-    $employees = $pdo->query("SELECT e.*, d.name as dept_name, p.title as pos_title, u.status AS account_status,
+    $employeesSql = "SELECT e.*, c.company_code, c.company_name, d.name as dept_name, p.title as pos_title, u.status AS account_status,
                              (SELECT COUNT(*) FROM cloud_documents cd WHERE cd.employee_id=e.id AND cd.status=1) as doc_count
-                          FROM employees e LEFT JOIN departments d ON e.department_id=d.id LEFT JOIN positions p ON e.position_id=p.id
-                          LEFT JOIN users u ON u.employee_id=e.id ORDER BY e.emp_code")->fetchAll();
+                          FROM employees e JOIN companies c ON c.company_id=e.company_id
+                          LEFT JOIN departments d ON e.department_id=d.id LEFT JOIN positions p ON e.position_id=p.id
+                          LEFT JOIN users u ON u.employee_id=e.id";
+    if ($selectedCompanyId !== null) {
+        $employeesSql .= ' WHERE e.company_id = ?';
+    }
+    $employeesSql .= ' ORDER BY e.emp_code';
+    $employeesStmt = $pdo->prepare($employeesSql);
+    $employeesStmt->execute($selectedCompanyId === null ? [] : [$selectedCompanyId]);
+    $employees = $employeesStmt->fetchAll();
     $pageTitle = 'ทะเบียนประวัติพนักงาน';
     include ROOT_PATH . '/includes/layout_top.php';
 ?>
 
 <div class="glass-card p-4 animate-up">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div class="input-group" style="max-width: 300px;">
-            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" id="searchEmp" class="form-control border-start-0" placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน...">
+        <div class="d-flex flex-wrap align-items-end gap-3">
+            <form method="get" action="<?php echo BASE_URL ?>/modules/personnel/employees.php">
+                <label for="employeesCompany" class="form-label small fw-semibold mb-1">บริษัท</label>
+                <select id="employeesCompany" name="company" class="form-select" style="min-width: 210px" onchange="this.form.requestSubmit()">
+                    <?php foreach ($companyOptions as $companyId => $companyLabel): ?>
+                        <option value="<?php echo htmlspecialchars($companyId, ENT_QUOTES, 'UTF-8') ?>" <?php echo $selectedCompany === (string) $companyId ? 'selected' : '' ?>>
+                            <?php echo htmlspecialchars($companyLabel, ENT_QUOTES, 'UTF-8') ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
+            <div class="input-group" style="max-width: 300px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="searchEmp" class="form-control border-start-0" placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน...">
+            </div>
         </div>
         <div class="d-flex gap-2 flex-wrap">
             <a href="employee_form.php" class="btn btn-primary btn-modern"><i class="bi bi-plus-lg me-1"></i>เพิ่มพนักงาน</a>
-            <a href="?action=export" class="btn btn-success btn-modern"><i class="bi bi-download me-1"></i>Export CSV</a>
+            <a href="?<?php echo htmlspecialchars(http_build_query($exportQuery), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-modern"><i class="bi bi-download me-1"></i>Export CSV</a>
             <button class="btn btn-outline-secondary btn-modern" data-bs-toggle="modal" data-bs-target="#importModal"><i class="bi bi-upload me-1"></i>Import CSV</button>
         </div>
     </div>
@@ -137,6 +186,7 @@
                             <div>
                                 <div class="fw-semibold"><?php echo htmlspecialchars($e['first_name'].' '.$e['last_name']) ?></div>
                                 <small class="text-muted"><?php echo htmlspecialchars($e['email']) ?></small>
+                                <small class="text-muted d-block"><?php echo htmlspecialchars($e['company_code'] . ' · ' . $e['company_name'], ENT_QUOTES, 'UTF-8') ?></small>
                             </div>
                         </div>
                     </td>

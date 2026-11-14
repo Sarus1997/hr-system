@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_emp'])) {
         $referenceStmt->execute([$value]);
         $reference = $referenceStmt->fetch();
         return $reference && (int)$reference['status'] === 1 &&
-            ($reference['company_id'] === null || (int)$reference['company_id'] === (int)$values['company_id']);
+            ($reference['company_id'] === null || (int)$reference['company_id'] === (int)$companyForReferences);
     };
     $departmentIsValid = $referenceIsValid(
         'departments',
@@ -280,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_emp'])) {
                     $pdo->rollBack();
                 }
                 if ($exception->getCode() === '23000') {
-                    $error = 'รหัสพนักงาน อีเมล เลขบัตรประชาชน หรือชื่อผู้ใช้งานนี้มีอยู่แล้ว';
+                    $error = 'รหัสพนักงานหรือชื่อผู้ใช้งานนี้มีอยู่แล้ว กรุณาตรวจสอบรหัสพนักงาน';
                 } else {
                     throw $exception;
                 }
@@ -332,7 +332,12 @@ include ROOT_PATH . '/includes/layout_top.php';
 <?php if ($documentNotice !== ''): ?><div class="alert alert-success rounded-3"><?= $escape($documentNotice) ?></div><?php endif; ?>
 
 <section class="glass-card p-4 animate-up" style="max-width: 960px;">
-    <h2 class="h5 fw-bold mb-4"><i class="bi bi-person-badge-fill text-primary me-2" aria-hidden="true"></i><?= $escape($pageTitle) ?></h2>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h2 class="h5 fw-bold mb-0"><i class="bi bi-person-badge-fill text-primary me-2" aria-hidden="true"></i><?= $escape($pageTitle) ?></h2>
+        <a href="employees.php" class="btn btn-light btn-modern" onclick="if (document.referrer && new URL(document.referrer).origin === window.location.origin) { window.history.back(); return false; }">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>ย้อนกลับหน้าก่อน
+        </a>
+    </div>
     <form method="post" enctype="multipart/form-data" class="row g-3">
         <input type="hidden" name="csrf_token" value="<?= $escape(csrfToken()) ?>">
         <?php if ($editId === ''): ?>

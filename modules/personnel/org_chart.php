@@ -2,12 +2,37 @@
     require_once __DIR__ . '/../../includes/auth.php';
     requireLogin();
 
-    $employees = $pdo->query("SELECT e.id, e.first_name, e.last_name, e.manager_id, e.profile_image_url, d.name AS dept, p.title AS pos
+    $companies = $pdo->query('SELECT company_id, company_code, company_name, status FROM companies ORDER BY company_name, company_id')->fetchAll();
+    $companyOptions = ['all' => 'ทุกบริษัท'];
+    foreach ($companies as $company) {
+        $companyId = (string) (int) $company['company_id'];
+        $companyOptions[$companyId] = $company['company_code'] . ' · ' . $company['company_name']
+            . ((int) $company['status'] === 1 ? '' : ' (ปิดใช้งาน)');
+    }
+
+    $selectedCompany = 'all';
+    if (array_key_exists('company', $_GET)) {
+        $requestedCompany = $_GET['company'];
+        if (! is_string($requestedCompany) || ! array_key_exists($requestedCompany, $companyOptions)) {
+            http_response_code(400);
+            exit('บริษัทที่เลือกไม่ถูกต้อง');
+        }
+        $selectedCompany = $requestedCompany;
+    }
+    $selectedCompanyId = $selectedCompany === 'all' ? null : (int) $selectedCompany;
+
+    $employeesSql = "SELECT e.id, e.first_name, e.last_name, e.manager_id, e.profile_image_url, d.name AS dept, p.title AS pos
                           FROM employees e
                           LEFT JOIN departments d ON e.department_id = d.id
                           LEFT JOIN positions p ON e.position_id = p.id
-                          WHERE e.status = 1 AND e.employment_status IN ('active', 'probation')
-                          ORDER BY e.first_name, e.last_name")->fetchAll();
+                          WHERE e.status = 1 AND e.employment_status IN ('active', 'probation')";
+    if ($selectedCompanyId !== null) {
+        $employeesSql .= ' AND e.company_id = ?';
+    }
+    $employeesSql .= ' ORDER BY e.first_name, e.last_name';
+    $employeesStmt = $pdo->prepare($employeesSql);
+    $employeesStmt->execute($selectedCompanyId === null ? [] : [$selectedCompanyId]);
+    $employees = $employeesStmt->fetchAll();
 
     /* ---------- เตรียมข้อมูล ---------- */
     $byId       = [];
@@ -150,6 +175,16 @@
                 <div class="oc-subtitle">คลิกการ์ดพนักงานเพื่อดูสายการบังคับบัญชาและทีมงาน</div>
             </div>
         </div>
+        <form method="get" class="oc-company-filter" action="<?php echo BASE_URL ?>/modules/personnel/org_chart.php">
+            <label for="ocCompanyFilter">บริษัท</label>
+            <select id="ocCompanyFilter" name="company" class="form-select form-select-sm" onchange="this.form.requestSubmit()">
+                <?php foreach ($companyOptions as $companyId => $companyLabel): ?>
+                    <option value="<?php echo htmlspecialchars($companyId, ENT_QUOTES, 'UTF-8') ?>" <?php echo $selectedCompany === (string) $companyId ? 'selected' : '' ?>>
+                        <?php echo htmlspecialchars($companyLabel, ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </form>
     </div>
 
     <div class="oc-stats">

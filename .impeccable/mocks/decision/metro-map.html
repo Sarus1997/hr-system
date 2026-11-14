@@ -1,18 +1,410 @@
 <!doctype html>
 <html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>เส้นทางงานวันนี้ — HR Cloud</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f5f4ee;color:#202b35;font:14px "IBM Plex Sans Thai",sans-serif}.app{height:900px;display:grid;grid-template-columns:242px 1fr}.side{background:#14243a;color:#dce4eb;padding:26px 18px}.brand{font-size:19px;color:#fff;font-weight:600}.brand small{display:block;color:#9cafc0;font:10px "IBM Plex Mono",monospace;letter-spacing:.13em;margin-top:4px}.label{margin:39px 10px 12px;color:#93a6b8;font:10px "IBM Plex Mono",monospace;letter-spacing:.13em}.nav{padding:10px 12px;margin:3px 0;border-radius:3px}.nav.active{background:#253d59;color:white}.nav.active:before{content:"";display:inline-block;width:7px;height:7px;background:#e36c55;border-radius:50%;margin-right:10px}.main{padding:29px 36px;overflow:hidden}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #d8dedb;padding-bottom:17px}.crumb{font:11px "IBM Plex Mono",monospace;color:#74858e}.btn{border:1px solid #c9d2d3;background:transparent;padding:8px 13px;color:#1f4050;border-radius:3px}.title{font-size:27px;margin:24px 0 4px}.sub{color:#718087}.linehead{display:flex;justify-content:space-between;align-items:center;margin:27px 0 12px}.linehead h2,.head h2{font-size:16px;margin:0}.linehead small{font:11px "IBM Plex Mono",monospace;color:#74858e}.routes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.route{background:#fff;border:1px solid #dce1dc;padding:15px 14px;min-height:110px}.route-top{display:flex;justify-content:space-between;align-items:center}.route b{font-size:13px}.route small{font:10px "IBM Plex Mono",monospace;color:#657984}.track{height:4px;background:#e1e4df;margin:16px 0 10px;position:relative}.track span{height:4px;display:block;width:78%;background:#4b9b8e}.route:nth-child(2) .track span{background:#e36c55;width:48%}.route:nth-child(3) .track span{background:#e6b849;width:61%}.route:nth-child(4) .track span{background:#6384aa;width:90%}.node{position:absolute;right:20%;top:-4px;width:12px;height:12px;background:#fff;border:3px solid #4b9b8e;border-radius:50%}.route:nth-child(2) .node{right:52%;border-color:#e36c55}.route:nth-child(3) .node{right:39%;border-color:#e6b849}.route:nth-child(4) .node{right:10%;border-color:#6384aa}.route-foot{display:flex;justify-content:space-between;color:#617078;font-size:11px}.content{display:grid;grid-template-columns:1.5fr .8fr;gap:26px;margin-top:29px}.head{display:flex;justify-content:space-between;border-bottom:1px solid #d5dcd8;padding-bottom:11px}.head a{color:#376b74;text-decoration:none;font-size:12px}.table{width:100%;border-collapse:collapse;margin-top:4px}.table th{text-align:left;padding:11px 8px;font-size:11px;color:#6e7c84;border-bottom:1px solid #ccd5d6}.table td{padding:13px 8px;border-bottom:1px solid #e1e5df}.name{font-weight:600}.code{font:10px "IBM Plex Mono",monospace;color:#75838a;margin-top:3px}.pill{font-size:11px;padding:4px 7px;background:#e1f0eb;color:#306c60}.pill.alert{background:#f9e9df;color:#a84b39}.queue{padding:15px 0;border-bottom:1px solid #dde2dc}.queue:last-child{border:0}.queue strong{font-size:13px}.queue p{margin:5px 0;color:#687981;font-size:12px}.queue a{color:#386c77;font-size:11px;text-decoration:none}.route small,.table,.code{font-variant-numeric:tabular-nums}
-</style>
-</head>
-<body><div class="app"><aside class="side"><div class="brand">HR Cloud<small>PEOPLE NETWORK</small></div><div class="label">ภาพรวม</div><div class="nav active">แดชบอร์ด</div><div class="label">เส้นทางบริการ</div><div class="nav">พนักงาน</div><div class="nav">องค์กร</div><div class="nav">ลงเวลาและ OT</div><div class="nav">เงินเดือน</div><div class="nav">รายงาน</div><div class="label">บริการตนเอง</div><div class="nav">ESS / MSS</div></aside>
-<main class="main"><header class="top"><div class="crumb">แผนผังบริการ　/　สถานะวันนี้</div><button class="btn">13 พ.ย. 2569　⌄</button></header><h1 class="title">สถานะงานบุคลากร</h1><div class="sub">ตัวอย่างเส้นทางสถานะของงานหลักในระบบ</div>
-<div class="linehead"><h2>ภาพรวมแต่ละเส้นทาง</h2><small>อัปเดต 09:12</small></div><section class="routes"><div class="route"><div class="route-top"><b>บุคลากร</b><small>248 คน</small></div><div class="track"><span></span><i class="node"></i></div><div class="route-foot"><span>ใช้งาน</span><span>6 รายการใหม่</span></div></div><div class="route"><div class="route-top"><b>ลงเวลา</b><small>216 / 248</small></div><div class="track"><span></span><i class="node"></i></div><div class="route-foot"><span>กำลังดำเนินการ</span><span>4 จุดแจ้งเตือน</span></div></div><div class="route"><div class="route-top"><b>อนุมัติ</b><small>11 รายการ</small></div><div class="track"><span></span><i class="node"></i></div><div class="route-foot"><span>รอดำเนินการ</span><span>4 ลา · 7 OT</span></div></div><div class="route"><div class="route-top"><b>เงินเดือน</b><small>รอบ พ.ย.</small></div><div class="track"><span></span><i class="node"></i></div><div class="route-foot"><span>เตรียมข้อมูล</span><span>เปิดรอบ →</span></div></div></section>
-<div class="content"><section><div class="head"><h2>กิจกรรมล่าสุด</h2><a href="#">เปิดรายการทั้งหมด　→</a></div><table class="table"><thead><tr><th>บุคลากร</th><th>กิจกรรม</th><th>เวลา</th><th>สถานะ</th></tr></thead><tbody><tr><td><div class="name">กานต์พิชชา วัฒนากร</div><div class="code">EMP-0248</div></td><td>ลงเวลาเข้างาน</td><td>08:42</td><td><span class="pill">ผ่าน</span></td></tr><tr><td><div class="name">ณัฐพล ศิริกุล</div><div class="code">EMP-0196</div></td><td>ลงเวลาเข้างาน</td><td>09:07</td><td><span class="pill alert">ล่าช้า</span></td></tr><tr><td><div class="name">ปรียาภรณ์ มีสุข</div><div class="code">EMP-0112</div></td><td>ส่งคำขอลา</td><td>เมื่อวาน</td><td><span class="pill alert">รอตรวจ</span></td></tr></tbody></table></section>
-<aside><div class="head"><h2>จุดเปลี่ยนสาย</h2><a href="#">ดูทั้งหมด →</a></div><div class="queue"><strong>คำขอลา 04</strong><p>รอหัวหน้างานตรวจสอบ</p><a href="#">ไปที่รายการอนุมัติ　→</a></div><div class="queue"><strong>คำขอ OT 07</strong><p>รอตรวจสอบก่อนปิดรอบ</p><a href="#">ไปที่รายการ OT　→</a></div><div class="queue"><strong>รอบเงินเดือน พ.ย.</strong><p>ยังไม่ได้เริ่มประมวลผล</p><a href="#">เปิดหน้าประมวลผล　→</a></div></aside></div><p style="font-size:11px;color:#76848a;margin-top:17px">ตัวอย่างภาพรวม · เส้นสีสรุปสถานะ แต่ทุกข้อมูลยังอ่านได้จากป้ายข้อความ</p></main></div></body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>เส้นทางงานวันนี้ — HR Cloud</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f5f4ee;
+        color: #202b35;
+        font:
+          14px "IBM Plex Sans Thai",
+          sans-serif;
+      }
+      .app {
+        height: 900px;
+        display: grid;
+        grid-template-columns: 242px 1fr;
+      }
+      .side {
+        background: #14243a;
+        color: #dce4eb;
+        padding: 26px 18px;
+      }
+      .brand {
+        font-size: 19px;
+        color: #fff;
+        font-weight: 600;
+      }
+      .brand small {
+        display: block;
+        color: #9cafc0;
+        font:
+          10px "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.13em;
+        margin-top: 4px;
+      }
+      .label {
+        margin: 39px 10px 12px;
+        color: #93a6b8;
+        font:
+          10px "IBM Plex Mono",
+          monospace;
+        letter-spacing: 0.13em;
+      }
+      .nav {
+        padding: 10px 12px;
+        margin: 3px 0;
+        border-radius: 3px;
+      }
+      .nav.active {
+        background: #253d59;
+        color: white;
+      }
+      .nav.active:before {
+        content: "";
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        background: #e36c55;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+      .main {
+        padding: 29px 36px;
+        overflow: hidden;
+      }
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #d8dedb;
+        padding-bottom: 17px;
+      }
+      .crumb {
+        font:
+          11px "IBM Plex Mono",
+          monospace;
+        color: #74858e;
+      }
+      .btn {
+        border: 1px solid #c9d2d3;
+        background: transparent;
+        padding: 8px 13px;
+        color: #1f4050;
+        border-radius: 3px;
+      }
+      .title {
+        font-size: 27px;
+        margin: 24px 0 4px;
+      }
+      .sub {
+        color: #718087;
+      }
+      .linehead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 27px 0 12px;
+      }
+      .linehead h2,
+      .head h2 {
+        font-size: 16px;
+        margin: 0;
+      }
+      .linehead small {
+        font:
+          11px "IBM Plex Mono",
+          monospace;
+        color: #74858e;
+      }
+      .routes {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .route {
+        background: #fff;
+        border: 1px solid #dce1dc;
+        padding: 15px 14px;
+        min-height: 110px;
+      }
+      .route-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .route b {
+        font-size: 13px;
+      }
+      .route small {
+        font:
+          10px "IBM Plex Mono",
+          monospace;
+        color: #657984;
+      }
+      .track {
+        height: 4px;
+        background: #e1e4df;
+        margin: 16px 0 10px;
+        position: relative;
+      }
+      .track span {
+        height: 4px;
+        display: block;
+        width: 78%;
+        background: #4b9b8e;
+      }
+      .route:nth-child(2) .track span {
+        background: #e36c55;
+        width: 48%;
+      }
+      .route:nth-child(3) .track span {
+        background: #e6b849;
+        width: 61%;
+      }
+      .route:nth-child(4) .track span {
+        background: #6384aa;
+        width: 90%;
+      }
+      .node {
+        position: absolute;
+        right: 20%;
+        top: -4px;
+        width: 12px;
+        height: 12px;
+        background: #fff;
+        border: 3px solid #4b9b8e;
+        border-radius: 50%;
+      }
+      .route:nth-child(2) .node {
+        right: 52%;
+        border-color: #e36c55;
+      }
+      .route:nth-child(3) .node {
+        right: 39%;
+        border-color: #e6b849;
+      }
+      .route:nth-child(4) .node {
+        right: 10%;
+        border-color: #6384aa;
+      }
+      .route-foot {
+        display: flex;
+        justify-content: space-between;
+        color: #617078;
+        font-size: 11px;
+      }
+      .content {
+        display: grid;
+        grid-template-columns: 1.5fr 0.8fr;
+        gap: 26px;
+        margin-top: 29px;
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #d5dcd8;
+        padding-bottom: 11px;
+      }
+      .head a {
+        color: #376b74;
+        text-decoration: none;
+        font-size: 12px;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 4px;
+      }
+      .table th {
+        text-align: left;
+        padding: 11px 8px;
+        font-size: 11px;
+        color: #6e7c84;
+        border-bottom: 1px solid #ccd5d6;
+      }
+      .table td {
+        padding: 13px 8px;
+        border-bottom: 1px solid #e1e5df;
+      }
+      .name {
+        font-weight: 600;
+      }
+      .code {
+        font:
+          10px "IBM Plex Mono",
+          monospace;
+        color: #75838a;
+        margin-top: 3px;
+      }
+      .pill {
+        font-size: 11px;
+        padding: 4px 7px;
+        background: #e1f0eb;
+        color: #306c60;
+      }
+      .pill.alert {
+        background: #f9e9df;
+        color: #a84b39;
+      }
+      .queue {
+        padding: 15px 0;
+        border-bottom: 1px solid #dde2dc;
+      }
+      .queue:last-child {
+        border: 0;
+      }
+      .queue strong {
+        font-size: 13px;
+      }
+      .queue p {
+        margin: 5px 0;
+        color: #687981;
+        font-size: 12px;
+      }
+      .queue a {
+        color: #386c77;
+        font-size: 11px;
+        text-decoration: none;
+      }
+      .route small,
+      .table,
+      .code {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="side">
+        <div class="brand">HR Cloud<small>PEOPLE NETWORK</small></div>
+        <div class="label">ภาพรวม</div>
+        <div class="nav active">แดชบอร์ด</div>
+        <div class="label">เส้นทางบริการ</div>
+        <div class="nav">พนักงาน</div>
+        <div class="nav">องค์กร</div>
+        <div class="nav">ลงเวลาและ OT</div>
+        <div class="nav">เงินเดือน</div>
+        <div class="nav">รายงาน</div>
+        <div class="label">บริการตนเอง</div>
+        <div class="nav">ESS / MSS</div>
+      </aside>
+      <main class="main">
+        <header class="top">
+          <div class="crumb">แผนผังบริการ　/　สถานะวันนี้</div>
+          <button class="btn">13 พ.ย. 2569　⌄</button>
+        </header>
+        <h1 class="title">สถานะงานบุคลากร</h1>
+        <div class="sub">ตัวอย่างเส้นทางสถานะของงานหลักในระบบ</div>
+        <div class="linehead">
+          <h2>ภาพรวมแต่ละเส้นทาง</h2>
+          <small>อัปเดต 09:12</small>
+        </div>
+        <section class="routes">
+          <div class="route">
+            <div class="route-top"><b>บุคลากร</b><small>248 คน</small></div>
+            <div class="track"><span></span><i class="node"></i></div>
+            <div class="route-foot">
+              <span>ใช้งาน</span><span>6 รายการใหม่</span>
+            </div>
+          </div>
+          <div class="route">
+            <div class="route-top"><b>ลงเวลา</b><small>216 / 248</small></div>
+            <div class="track"><span></span><i class="node"></i></div>
+            <div class="route-foot">
+              <span>กำลังดำเนินการ</span><span>4 จุดแจ้งเตือน</span>
+            </div>
+          </div>
+          <div class="route">
+            <div class="route-top"><b>อนุมัติ</b><small>11 รายการ</small></div>
+            <div class="track"><span></span><i class="node"></i></div>
+            <div class="route-foot">
+              <span>รอดำเนินการ</span><span>4 ลา · 7 OT</span>
+            </div>
+          </div>
+          <div class="route">
+            <div class="route-top"><b>เงินเดือน</b><small>รอบ พ.ย.</small></div>
+            <div class="track"><span></span><i class="node"></i></div>
+            <div class="route-foot">
+              <span>เตรียมข้อมูล</span><span>เปิดรอบ →</span>
+            </div>
+          </div>
+        </section>
+        <div class="content">
+          <section>
+            <div class="head">
+              <h2>กิจกรรมล่าสุด</h2>
+              <a href="#">เปิดรายการทั้งหมด　→</a>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>บุคลากร</th>
+                  <th>กิจกรรม</th>
+                  <th>เวลา</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="name">กานต์พิชชา วัฒนากร</div>
+                    <div class="code">EMP-0248</div>
+                  </td>
+                  <td>ลงเวลาเข้างาน</td>
+                  <td>08:42</td>
+                  <td><span class="pill">ผ่าน</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="name">ณัฐพล ศิริกุล</div>
+                    <div class="code">EMP-0196</div>
+                  </td>
+                  <td>ลงเวลาเข้างาน</td>
+                  <td>09:07</td>
+                  <td><span class="pill alert">ล่าช้า</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="name">ปรียาภรณ์ มีสุข</div>
+                    <div class="code">EMP-0112</div>
+                  </td>
+                  <td>ส่งคำขอลา</td>
+                  <td>เมื่อวาน</td>
+                  <td><span class="pill alert">รอตรวจ</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <aside>
+            <div class="head">
+              <h2>จุดเปลี่ยนสาย</h2>
+              <a href="#">ดูทั้งหมด →</a>
+            </div>
+            <div class="queue">
+              <strong>คำขอลา 04</strong>
+              <p>รอหัวหน้างานตรวจสอบ</p>
+              <a href="#">ไปที่รายการอนุมัติ　→</a>
+            </div>
+            <div class="queue">
+              <strong>คำขอ OT 07</strong>
+              <p>รอตรวจสอบก่อนปิดรอบ</p>
+              <a href="#">ไปที่รายการ OT　→</a>
+            </div>
+            <div class="queue">
+              <strong>รอบเงินเดือน พ.ย.</strong>
+              <p>ยังไม่ได้เริ่มประมวลผล</p>
+              <a href="#">เปิดหน้าประมวลผล　→</a>
+            </div>
+          </aside>
+        </div>
+        <p style="font-size: 11px; color: #76848a; margin-top: 17px">
+          ตัวอย่างภาพรวม · เส้นสีสรุปสถานะ แต่ทุกข้อมูลยังอ่านได้จากป้ายข้อความ
+        </p>
+      </main>
+    </div>
+  </body>
+</html>
