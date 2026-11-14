@@ -474,7 +474,7 @@
                 <span class="kpi-label"><?php echo $selectedScope === 'self' ? 'พนักงานของฉัน' : 'พนักงานทั้งหมด' ?></span>
                 <span class="kpi-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
             </div>
-            <div class="kpi-value"><?php echo (int)$totalEmp ?><small>คน</small></div>
+            <div class="kpi-value"><span data-count="<?php echo (int)$totalEmp ?>"><?php echo (int)$totalEmp ?></span><small>คน</small></div>
             <div class="kpi-foot"><?php echo htmlspecialchars($scopeLabel) ?></div>
         </div>
     </div>
@@ -485,7 +485,7 @@
                 <span class="kpi-label">เช็กอินวันนี้</span>
                 <span class="kpi-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span>
             </div>
-            <div class="kpi-value"><?php echo (int)$todayIn ?><small>คน</small></div>
+            <div class="kpi-value"><span data-count="<?php echo (int)$todayIn ?>"><?php echo (int)$todayIn ?></span><small>คน</small></div>
             <div class="kpi-foot">
                 <?php echo $showMyStats ? 'ของฉัน: ' . (int)$myTodayIn . ' คน' : htmlspecialchars($scopeLabel) ?>
             </div>
@@ -498,7 +498,7 @@
                 <span class="kpi-label">คำขอลารออนุมัติ</span>
                 <span class="kpi-icon"><i class="bi bi-calendar2-week-fill" aria-hidden="true"></i></span>
             </div>
-            <div class="kpi-value"><?php echo (int)$pendingLeaves ?><small>รายการ</small></div>
+            <div class="kpi-value"><span data-count="<?php echo (int)$pendingLeaves ?>"><?php echo (int)$pendingLeaves ?></span><small>รายการ</small></div>
             <div class="kpi-foot">
                 <?php echo $showMyStats ? 'ของฉัน: ' . (int)$myPendingLeaves . ' รายการ' : htmlspecialchars($scopeLabel) ?>
             </div>
@@ -511,7 +511,7 @@
                 <span class="kpi-label">คำขอ OT รออนุมัติ</span>
                 <span class="kpi-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
             </div>
-            <div class="kpi-value"><?php echo (int)$pendingOTs ?><small>รายการ</small></div>
+            <div class="kpi-value"><span data-count="<?php echo (int)$pendingOTs ?>"><?php echo (int)$pendingOTs ?></span><small>รายการ</small></div>
             <div class="kpi-foot">
                 <?php echo $showMyStats ? 'ของฉัน: ' . (int)$myPendingOTs . ' รายการ' : htmlspecialchars($scopeLabel) ?>
             </div>
@@ -595,7 +595,13 @@
     if (!canvas || typeof Chart === 'undefined') return;
 
     Chart.defaults.font.family = "'Plus Jakarta Sans', 'IBM Plex Sans Thai', sans-serif";
-    Chart.defaults.color = '#64748b';
+    Chart.defaults.color = palette().text;
+
+    /* สีกราฟตามธีมปัจจุบัน */
+    function palette() {
+        var dark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        return { text: dark ? '#8c96b0' : '#64748b', grid: dark ? '#212943' : '#eef0f6' };
+    }
 
     /* แท่งกราฟไล่สีแนวตั้งให้ดูมีมิติ */
     function barFill(context) {
@@ -608,7 +614,8 @@
         return g;
     }
 
-    new Chart(canvas, {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var chart = new Chart(canvas, {
         type: 'bar',
         data: {
             labels: <?php echo json_encode(array_column($deptStats, 'name'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>,
@@ -625,11 +632,20 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: reduceMotion ? false : {
+                duration: 900,
+                easing: 'easeOutQuart',
+                delay: function (ctx) {
+                    return ctx.type === 'data' && ctx.mode === 'default' ? ctx.dataIndex * 70 : 0;
+                }
+            },
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#0f172a',
+                    borderColor: '#2f3a5c',
+                    borderWidth: 1,
                     padding: 12,
                     cornerRadius: 10,
                     displayColors: false,
@@ -648,11 +664,20 @@
                 y: {
                     beginAtZero: true,
                     border: { display: false },
-                    grid: { color: '#eef0f6', drawTicks: false },
+                    grid: { color: palette().grid, drawTicks: false },
                     ticks: { stepSize: 1, precision: 0, padding: 8 }
                 }
             }
         }
+    });
+
+    /* อัปเดตสีกราฟทันทีเมื่อสลับธีม */
+    window.addEventListener('themechange', function () {
+        var pal = palette();
+        chart.options.scales.x.ticks.color = pal.text;
+        chart.options.scales.y.ticks.color = pal.text;
+        chart.options.scales.y.grid.color = pal.grid;
+        chart.update('none');
     });
 })();
 </script>
