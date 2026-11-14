@@ -301,7 +301,7 @@ include ROOT_PATH . '/includes/layout_top.php';
                             <td>
                                 <?= htmlspecialchars($request['reason'] ?? '') ?>
                                 <?php if (!empty($request['attachment_url']) && str_starts_with($request['attachment_url'], BASE_URL . '/uploads/ot_attachments/')): ?>
-                                    <br><a href="<?= htmlspecialchars($request['attachment_url']) ?>" target="_blank" rel="noopener" class="small">ดูไฟล์แนบ</a>
+                                    <br><a href="<?= BASE_URL ?>/modules/ess/ot_attachment.php?id=<?= (int)$request['id'] ?>" target="_blank" rel="noopener" class="small">ดูไฟล์แนบ</a>
                                 <?php endif; ?>
                             </td>
                             <td><?= htmlspecialchars($request['approver_name'] ?? '-') ?></td>

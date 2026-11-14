@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once ROOT_PATH . '/config/cloud_storage.php';
+require_once ROOT_PATH . '/includes/audit_log.php';
 requireLogin();
 
 if (!hasRole(['admin', 'hr'])) {
@@ -56,8 +57,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_document_status']
         http_response_code(404);
         exit('ไม่พบเอกสารของพนักงานรายนี้');
     }
-    $pdo->prepare('UPDATE cloud_documents SET status = ? WHERE id = ? AND employee_id = ?')
-        ->execute([$documentStatus, $documentId, $editId]);
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE cloud_documents SET status = ? WHERE id = ? AND employee_id = ?')
+            ->execute([$documentStatus, $documentId, $editId]);
+        recordAuditEvent($pdo, 'employee.document_status_changed', 'employee_document', (string)$documentId, [
+            'employee_id' => $editId,
+            'status' => (int)$documentStatus,
+        ]);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
     header('Location: ' . BASE_URL . '/modules/personnel/employee_form.php?id=' . rawurlencode($editId) . '&document_updated=1');
     exit;
 }
@@ -225,6 +239,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_emp'])) {
                         ->execute([$targetEmployeeId, $docType, basename($file['name']), $cloud['bucket'], $cloud['key'], $cloud['url']]);
                 }
 
+                $changedFields = [];
+                if ($editId !== '') {
+                    $auditedValues = [
+                        'emp_code' => $values['emp_code'],
+                        'first_name' => $values['first_name'],
+                        'last_name' => $values['last_name'],
+                        'id_card_no' => $values['id_card_no'],
+                        'email' => $values['email'],
+                        'phone' => $values['phone'] ?: null,
+                        'department_id' => $departmentId,
+                        'position_id' => $positionId,
+                        'manager_id' => $managerId,
+                        'hire_date' => $values['hire_date'],
+                        'base_salary' => $values['base_salary'],
+                        'employment_status' => $values['employment_status'],
+                        'status' => $values['status'],
+                    ];
+                    foreach ($auditedValues as $field => $value) {
+                        if ((string)($emp[$field] ?? '') !== (string)($value ?? '')) {
+                            $changedFields[] = $field;
+                        }
+                    }
+                    if ($accountStatus !== null && $accountStatus !== (int)$values['account_status']) {
+                        $changedFields[] = 'account_status';
+                    }
+                }
+                recordAuditEvent(
+                    $pdo,
+                    $editId === '' ? 'employee.created' : 'employee.updated',
+                    'employee',
+                    (string)$targetEmployeeId,
+                    $editId === '' ? [] : ['changed_fields' => $changedFields]
+                );
                 $pdo->commit();
                 header('Location: ' . BASE_URL . '/modules/personnel/employees.php?saved=1');
                 exit;
@@ -337,7 +384,7 @@ include ROOT_PATH . '/includes/layout_top.php';
                 <span class="badge <?= (int)$document['status'] === 1 ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>"><?= (int)$document['status'] === 1 ? 'ใช้งาน' : 'ปิดใช้งาน' ?></span>
             </span>
             <div class="d-flex gap-2">
-                <?php if ((int)$document['status'] === 1): ?><a href="<?= $escape($document['file_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">เปิดดู</a><?php endif; ?>
+                <?php if ((int)$document['status'] === 1): ?><a href="<?= BASE_URL ?>/modules/personnel/document_download.php?id=<?= (int)$document['id'] ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">เปิดดู</a><?php endif; ?>
                 <form method="post">
                     <input type="hidden" name="csrf_token" value="<?= $escape(csrfToken()) ?>">
                     <input type="hidden" name="document_id" value="<?= (int)$document['id'] ?>">

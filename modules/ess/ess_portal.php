@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once ROOT_PATH . '/includes/leave_service.php';
 require_once ROOT_PATH . '/includes/ot_calculation.php';
 require_once ROOT_PATH . '/includes/approval_workflow.php';
+require_once ROOT_PATH . '/includes/audit_log.php';
 requireLogin();
 
 $empId = (string)($_SESSION['employee_id'] ?? '');
@@ -203,6 +204,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $notice = 'อนุมัติขั้นที่ ' . (int)$request['current_step'] . '/' . (int)$request['total_steps'] . ' แล้ว ส่งต่อผู้อนุมัติถัดไป';
                         }
 
+                        recordAuditEvent($pdo, $action . '.' . $status, $isLeaveApproval ? 'leave_request' : 'ot_request', (string)$requestId, [
+                            'status' => $status,
+                            'step' => (int)$request['current_step'],
+                        ]);
                         $pdo->commit();
                         $_SESSION['ess_notice'] = $notice;
                         header('Location: ' . BASE_URL . '/modules/ess/ess_portal.php');
@@ -368,7 +373,7 @@ include ROOT_PATH . '/includes/layout_top.php';
                             <strong class="small"><?= htmlspecialchars($request['first_name'] . ' ' . $request['last_name']) ?></strong>
                             <div class="text-muted small"><?= htmlspecialchars($request['ot_date']) ?> · <?= htmlspecialchars(getOtTypeLabels()[$request['ot_type']] ?? $request['ot_type']) ?> · <?= number_format((float)$request['hours'], 0) ?> ชม. · ฿<?= number_format((float)$request['total_pay'], 2) ?> · <?= htmlspecialchars($request['reason']) ?></div>
                             <?php if (!empty($request['attachment_url']) && str_starts_with($request['attachment_url'], BASE_URL . '/uploads/ot_attachments/')): ?>
-                                <a href="<?= htmlspecialchars($request['attachment_url']) ?>" target="_blank" rel="noopener" class="small">ดูไฟล์แนบ</a>
+                                <a href="<?= BASE_URL ?>/modules/ess/ot_attachment.php?id=<?= (int)$request['id'] ?>" target="_blank" rel="noopener" class="small">ดูไฟล์แนบ</a>
                             <?php endif; ?>
                         </div>
                         <form method="post" class="d-flex gap-1">

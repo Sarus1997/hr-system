@@ -1,0 +1,12 @@
+/\.env
+/config/db.local.php
+/uploads/*
+!/uploads/leave_attachments/
+!/uploads/employee_docs/
+!/uploads/ot_attachments/
+/uploads/leave_attachments/*
+!/uploads/leave_attachments/.htaccess
+/uploads/employee_docs/*
+!/uploads/employee_docs/.htaccess
+/uploads/ot_attachments/*
+!/uploads/ot_attachments/.htaccess

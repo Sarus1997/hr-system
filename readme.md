@@ -54,3 +54,17 @@ web
 - รักษา workflow และความหมายของข้อมูลเดิม
 - ทำให้เจ้าหน้าที่และพนักงานเข้าถึงงานประจำได้ชัดเจน
 - ใช้ภาษาไทยที่สอดคล้องกับคำศัพท์ในระบบเดิม
+
+## Local database setup
+
+Copy `.env.example` to `.env` and set the database credentials, or provide
+`HR_DB_HOST`, `HR_DB_NAME`, `HR_DB_USER`, and `HR_DB_PASS` as environment
+variables. The `.env` file is ignored by Git and must not be committed.
+
+Before deploying the password-storage and audit-log changes, back up the
+database and run `database/production_safety_migration.sql`. The migration
+copies each existing password hash into the legacy password column and creates
+the audit log table. Private employee-document and OT-upload directories are
+served through authenticated PHP endpoints; the Apache deny rules in each
+directory should be retained. Configure equivalent direct-access denial in
+the web server if it does not honor `.htaccess`.

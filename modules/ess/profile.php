@@ -111,9 +111,20 @@
         if (! is_string($passwordHash) || ! password_verify($currentPassword, $passwordHash)) {
             $error = 'รหัสผ่านเดิมไม่ถูกต้อง';
         } else {
-            $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 6]);
-            $pdo->prepare('UPDATE users SET password = ?, password_hash = ? WHERE employee_id = ?')
-                ->execute([$newPassword, $newHash, $employeeId]);
+            $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+            require_once ROOT_PATH . '/includes/audit_log.php';
+            $pdo->beginTransaction();
+            try {
+                $pdo->prepare('UPDATE users SET password = ?, password_hash = ? WHERE employee_id = ?')
+                    ->execute([$newHash, $newHash, $employeeId]);
+                recordAuditEvent($pdo, 'account.password_changed', 'user', (string)$_SESSION['user_id']);
+                $pdo->commit();
+            } catch (Throwable $exception) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $exception;
+            }
             session_regenerate_id(true);
             $_SESSION['profile_notice'] = 'เปลี่ยนรหัสผ่านสำเร็จ';
             header('Location: ' . BASE_URL . '/modules/ess/profile.php');
@@ -129,7 +140,7 @@
     $slipStmt->execute([$employeeId]);
     $slips = $slipStmt->fetchAll();
 
-    $docStmt = $pdo->prepare('SELECT file_name, file_url FROM cloud_documents WHERE employee_id = ? AND status = 1 ORDER BY uploaded_at DESC');
+    $docStmt = $pdo->prepare('SELECT id, file_name FROM cloud_documents WHERE employee_id = ? AND status = 1 ORDER BY uploaded_at DESC');
     $docStmt->execute([$employeeId]);
     $documents = $docStmt->fetchAll();
 
@@ -193,20 +204,10 @@
             <h2 class="h6 fw-bold mt-4 mb-2">เอกสารส่วนตัว</h2>
             <?php if (! $documents): ?>
                 <p class="text-muted small mb-0">ไม่มีเอกสาร</p>
-            <?php else: foreach ($documents as $document):
-                        $fileUrl = (string) $document['file_url'];
-                        $scheme  = parse_url($fileUrl, PHP_URL_SCHEME);
-                        $safeUrl = str_starts_with($fileUrl, BASE_URL . '/uploads/') || $scheme === 'https';
-            ?>
-                <?php if ($safeUrl): ?>
-                    <a href="<?php echo htmlspecialchars($fileUrl) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-light border me-1 mb-1">
+            <?php else: foreach ($documents as $document): ?>
+                    <a href="<?php echo BASE_URL ?>/modules/personnel/document_download.php?id=<?php echo (int)$document['id'] ?>" target="_blank" rel="noopener" class="btn btn-sm btn-light border me-1 mb-1">
                         <i class="bi bi-file-earmark me-1" aria-hidden="true"></i><?php echo htmlspecialchars($document['file_name']) ?>
                     </a>
-                <?php else: ?>
-                    <span class="btn btn-sm btn-light border text-muted me-1 mb-1" aria-disabled="true">
-                        <i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i><?php echo htmlspecialchars($document['file_name']) ?> (ลิงก์ไม่ปลอดภัย)
-                    </span>
-                <?php endif; ?>
             <?php endforeach;endif; ?>
         </section>
     </div>

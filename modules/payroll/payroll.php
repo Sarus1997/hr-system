@@ -1,5 +1,6 @@
 <?php
     require_once __DIR__ . '/../../includes/auth.php';
+    require_once ROOT_PATH . '/includes/audit_log.php';
     requireLogin();
     if (! hasRole(['admin', 'hr'])) {
     http_response_code(403);
@@ -86,6 +87,11 @@
             $pdo->prepare("INSERT INTO payroll_items (period_id, employee_id, base_salary, ot_amount, social_security, withholding_tax, net_salary) VALUES (?, ?, ?, ?, ?, ?, ?)")
                 ->execute([$pid, $emp['id'], $emp['base_salary'], $otAmount, $sso, $tax, $net]);
             }
+            recordAuditEvent($pdo, 'payroll.period_calculated', 'payroll_period', (string)$pid, [
+                'company_id' => (int)$companyId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
             $pdo->commit();
         }
     } catch (Throwable $exception) {
@@ -112,8 +118,25 @@
         http_response_code(400);
         exit('รหัสงวดเงินเดือนไม่ถูกต้อง');
     }
-    $pdo->prepare("INSERT INTO payroll_outsourcing_logs (period_id, exported_by) VALUES (?, ?)")->execute([$pid, $_SESSION['employee_id']]);
-    $pdo->prepare("UPDATE payroll_periods SET status = 'outsourced' WHERE id = ?")->execute([$pid]);
+    $periodCheck = $pdo->prepare('SELECT id FROM payroll_periods WHERE id = ?');
+    $periodCheck->execute([$pid]);
+    if ($periodCheck->fetchColumn() === false) {
+        http_response_code(404);
+        exit('ไม่พบงวดเงินเดือน');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare("INSERT INTO payroll_outsourcing_logs (period_id, exported_by) VALUES (?, ?)")->execute([$pid, $_SESSION['employee_id']]);
+        $pdo->prepare("UPDATE payroll_periods SET status = 'outsourced' WHERE id = ?")->execute([$pid]);
+        recordAuditEvent($pdo, 'payroll.period_exported', 'payroll_period', $pid);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="tiger_payroll_' . rawurlencode($pid) . '.csv"');
     $out = fopen('php://output', 'w');
